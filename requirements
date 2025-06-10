@@ -1,6 +1,6 @@
 streamlit
-selenium
+selenium>=4.0.0
+webdriver-manager>=3.8.0
 beautifulsoup4
 pandas
 numpy
-webdriver-manager
