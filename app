@@ -1,19 +1,18 @@
 import streamlit as st
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
-import urllib.parse
-import pandas as pd
-import numpy as np
-import re
 
 def setup_webdriver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    # Add this to ensure the path to the executable is correctly set
+    chrome_options.binary_location = "/usr/bin/chromium" # Or "/usr/bin/google-chrome" if you installed google-chrome-stable
+
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
 def navigate_to_search_page(driver):
