@@ -1,79 +1,128 @@
 import streamlit as st
 import requests
-from bs4 import BeautifulSoup
-import pandas as pd
+import json
 
-st.title("법원 경매 물건 검색기 (requests+BeautifulSoup)")
+st.title("법원 경매 물건 검색기 (JSON API)")
 
-# Streamlit 입력 폼
+# Streamlit 입력 폼 예시 (실제로는 API 파라미터에 맞게 커스터마이즈 필요)
 with st.form("search_form"):
-    jiwon = st.selectbox(
-        "법원",
-        ["서울중앙지방법원", "서울동부지방법원", "서울서부지방법원"],
+    cortOfcCd = st.text_input("법원코드(예: B000210)", value="B000210")
+    bidBgngYmd = st.date_input("경매시작일", value="2025-06-18")
+    bidEndYmd = st.date_input("경매종료일", value="2025-07-02")
+    sclDspslGdsLstUsgCd = st.selectbox(
+        "건물유형코드(예: 아파트)",
+        ["20104", "20101", "20102", "20103", "20105", "20106", "20107", "20108", "20109", "20110", "20111"],
         index=0
     )
-    building = st.selectbox(
-        "건물 유형",
-        ["아파트", "단독주택", "다가구주택", "다중주택", "연립주택", "다세대주택", "기숙사", "빌라", "상가주택", "오피스텔", "주상복합"],
-        index=0
-    )
-    start_date = st.date_input("시작 날짜")
-    end_date = st.date_input("종료 날짜")
     submit = st.form_submit_button("검색")
 
 if submit:
-    url = "https://www.courtauction.go.kr/RetrieveRealEstMulDetailList.laf"
-    # 아래 form_data, headers, cookies는 개발자도구에서 복사해서 붙여넣어야 합니다!
-    # 아래는 예시입니다. 실제로는 네트워크 탭에서 요청을 확인해서 값을 넣어주세요!
-    form_data = {
-        'idJiwonNm': jiwon,
-        'lclsUtilCd': '0000802',  # 부동산
-        'mclsUtilCd': '000080201',  # 주거용
-        'sclsUtilCd': {  # 건물 유형 코드 예시 (아파트)
-            "아파트": "00008020104",
-            "단독주택": "00008020101",
-            "다가구주택": "00008020102",
-            "다중주택": "00008020103",
-            "연립주택": "00008020105",
-            "다세대주택": "00008020106",
-            "기숙사": "00008020107",
-            "빌라": "00008020108",
-            "상가주택": "00008020109",
-            "오피스텔": "00008020110",
-            "주상복합": "00008020111"
-        }[building],
-        'termStartDt': start_date.strftime('%Y.%m.%d'),
-        'termEndDt': end_date.strftime('%Y.%m.%d'),
-        # 'srchYn': 'Y',  # 필요시 추가
-    }
-    # 세션 유지가 필요하다면 cookies, headers도 추가해야 합니다.
-    # 아래는 예시입니다!
+    url = "https://www.courtauction.go.kr/pgj/pgjsearch/searchControllerMain.on"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-        'Referer': 'https://www.courtauction.go.kr/'
+        "Accept": "application/json",
+        "Accept-Language": "ko-KR,ko;q=0.9",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://www.courtauction.go.kr",
+        "Referer": "https://www.courtauction.go.kr/pgj/index.on?w2xPath=/pgj/ui/pgj100/PGJ151F00.xml",
+        "SC-Userid": "SYSTEM",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+        "sec-ch-ua": '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "submissionid": "mf_wfm_mainFrame_sbm_selectGdsDtlSrch"
     }
-    # 쿠키는 네트워크 탭에서 확인해서 넣어주세요!
     cookies = {
-        # 'JSESSIONID': '...',
-        # 'WMONID': '...',
+        "WMONID": "MdVTumwHWMQ",
+        "JSESSIONID": "KCCA2BDPF9df-U8ZnINo6hykDuqYTOlc6UJ4pSWbQeKY5CNpcnn1!345867374",
+        "cortAuctnLgnMbr": "",
+        "wcCookieV2": "115.91.150.54_T_945218_WC",
+        "lastAccess": "1750213458681"
     }
-    # 실제 요청
-    with st.spinner('검색 중...'):
+    data = {
+        "dma_pageInfo": {
+            "pageNo": 1,
+            "pageSize": 10,
+            "bfPageNo": 1,
+            "startRowNo": 1,
+            "totalCnt": "",
+            "totalYn": "N",
+            "groupTotalCount": 0
+        },
+        "dma_srchGdsDtlSrchInfo": {
+            "rletDspslSpcCondCd": "",
+            "bidDvsCd": "000331",
+            "mvprpRletDvsCd": "00031R",
+            "cortAuctnSrchCondCd": "0004601",
+            "rprsAdongSdCd": "11",
+            "rprsAdongSggCd": "",
+            "rprsAdongEmdCd": "",
+            "rdnmSdCd": "",
+            "rdnmSggCd": "",
+            "rdnmNo": "",
+            "mvprpDspslPlcAdongSdCd": "",
+            "mvprpDspslPlcAdongSggCd": "",
+            "mvprpDspslPlcAdongEmdCd": "",
+            "rdDspslPlcAdongSdCd": "",
+            "rdDspslPlcAdongSggCd": "",
+            "rdDspslPlcAdongEmdCd": "",
+            "cortOfcCd": cortOfcCd,
+            "jdbnCd": "",
+            "execrOfcDvsCd": "",
+            "lclDspslGdsLstUsgCd": "20000",
+            "mclDspslGdsLstUsgCd": "20100",
+            "sclDspslGdsLstUsgCd": sclDspslGdsLstUsgCd,
+            "cortAuctnMbrsId": "",
+            "aeeEvlAmtMin": "",
+            "aeeEvlAmtMax": "",
+            "lwsDspslPrcRateMin": "",
+            "lwsDspslPrcRateMax": "",
+            "flbdNcntMin": "",
+            "flbdNcntMax": "",
+            "objctArDtsMin": "",
+            "objctArDtsMax": "",
+            "mvprpArtclKndCd": "",
+            "mvprpArtclNm": "",
+            "mvprpAtchmPlcTypCd": "",
+            "notifyLoc": "on",
+            "lafjOrderBy": "",
+            "pgmId": "PGJ151F01",
+            "csNo": "",
+            "cortStDvs": "2",
+            "statNum": 1,
+            "bidBgngYmd": bidBgngYmd.strftime("%Y%m%d"),
+            "bidEndYmd": bidEndYmd.strftime("%Y%m%d"),
+            "dspslDxdyYmd": "",
+            "fstDspslHm": "",
+            "scndDspslHm": "",
+            "thrdDspslHm": "",
+            "fothDspslHm": "",
+            "dspslPlcNm": "",
+            "lwsDspslPrcMin": "",
+            "lwsDspslPrcMax": "",
+            "grbxTypCd": "",
+            "gdsVendNm": "",
+            "fuelKndCd": "",
+            "carMdyrMax": "",
+            "carMdyrMin": "",
+            "carMdlNm": ""
+        }
+    }
+    with st.spinner("검색 중..."):
         try:
-            response = requests.post(url, headers=headers, data=form_data, cookies=cookies)
-            soup = BeautifulSoup(response.text, 'lxml')
-            table = soup.find('table', attrs={'class': 'Ltbl_list'})
-            rows = []
-            if table:
-                for tr in table.find_all('tr')[1:]:
-                    tds = [td.get_text(strip=True) for td in tr.find_all('td')]
-                    if tds:
-                        rows.append(tds)
-                df = pd.DataFrame(rows)
-                st.dataframe(df)
-                if df.empty:
-                    st.warning("검색 결과가 없습니다.")
+            response = requests.post(
+                url,
+                headers=headers,
+                cookies=cookies,
+                data=json.dumps(data, ensure_ascii=False).encode("utf-8")
+            )
+            if response.status_code == 200:
+                result = response.json()
+                st.json(result)  # JSON 결과 전체 출력
+                # 결과가 리스트/테이블 형태라면, 아래처럼 DataFrame으로 변환 가능
+                # import pandas as pd
+                # df = pd.DataFrame(result['dma_srchGdsDtlSrchInfoList'])
+                # st.dataframe(df)
             else:
-                st.warning("테이블을 찾을 수 없습니다. 사이트 구조가 변경되었거나, 요청 파라미터를 확인해주세요.")
+                st.error(f"요청 실패: {response.status_code}")
         except Exception as e:
-            st.error(f"오류가 발생했습니다: {e}")
+            st.error(f"오류 발생: {e}")
